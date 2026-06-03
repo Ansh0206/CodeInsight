@@ -3,121 +3,163 @@ import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import { Btn, Spinner } from "../components/UI";
 
-const LANGS = ["JavaScript", "Python", "TypeScript", "Java", "C++", "Go", "Rust", "PHP", "C#", "Ruby", "Swift", "Kotlin"];
+const LANGS = ["Java", "Python"];
 
-const DEMO_CODE = `function fibonacci(n) {
-  if (n <= 1) return n;
-  return fibonacci(n - 1) + fibonacci(n - 2);
-}
+const SAMPLES = {
+  Java: `import java.util.Scanner;
 
-const result = [];
-for (var i = 0; i < 10; i++) {
-  result.push(fibonacci(i));
-}
-console.log(result);`;
+public class LoginChecker {
+  public String password = "admin123";
+
+  public boolean isAdmin(String role) {
+    if (role == "admin") {
+      System.out.println("Admin login");
+      return true;
+    }
+    return false;
+  }
+
+  public void readUser() throws Exception {
+    Scanner scanner = new Scanner(System.in);
+    String name = scanner.nextLine();
+    System.out.println(name);
+  }
+}`,
+  Python: `import subprocess
+
+def add_item(item, items=[]):
+    items.append(item)
+    return items
+
+def run_command(command):
+    try:
+        subprocess.run(command, shell=True)
+    except:
+        print("failed")
+`,
+};
 
 const STEPS = [
-  "Tokenizing code structure...",
-  "Running complexity analysis...",
-  "Evaluating readability patterns...",
-  "Scanning for duplications...",
-  "Generating quality score...",
-  "Compiling actionable suggestions...",
+  "Reading code structure",
+  "Calculating complexity",
+  "Checking duplication",
+  "Scanning maintainability risks",
+  "Preparing review report",
 ];
 
 export default function Submit() {
-  const navigate            = useNavigate();
-  const [code, setCode]     = useState(DEMO_CODE);
-  const [lang, setLang]     = useState("JavaScript");
+  const navigate = useNavigate();
+  const [lang, setLang] = useState("Java");
+  const [code, setCode] = useState(SAMPLES.Java);
   const [loading, setLoading] = useState(false);
-  const [step, setStep]     = useState(0);
-  const [err, setErr]       = useState("");
+  const [step, setStep] = useState(0);
+  const [err, setErr] = useState("");
+
+  const lineCount = code ? code.split(/\r?\n/).length : 0;
 
   const analyze = async () => {
     if (!code.trim()) return;
-    setErr(""); setLoading(true); setStep(0);
-    const iv = setInterval(() => setStep((s) => (s + 1) % STEPS.length), 900);
+    setErr("");
+    setLoading(true);
+    setStep(0);
+
+    const interval = setInterval(() => setStep((current) => (current + 1) % STEPS.length), 850);
     try {
       const { data } = await api.post("/analyze", { code, language: lang });
-      clearInterval(iv);
+      clearInterval(interval);
       navigate(`/report/${data.id}`, { state: { report: data } });
     } catch (ex) {
-      clearInterval(iv);
-      setErr(ex.response?.data?.error || "Analysis failed. Check your API key in backend/.env");
+      clearInterval(interval);
+      setErr(ex.response?.data?.error || "Analysis failed. Make sure the backend server is running on port 5000.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
-
-  const selStyle = {
-    background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)",
-    borderRadius: 8, padding: "8px 14px", fontSize: 13, outline: "none",
   };
 
   return (
-    <div className="fade-in" style={{ padding: 32, maxWidth: 900 }}>
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>Submit Code for Review</h1>
-        <p style={{ color: "var(--muted)", fontSize: 14 }}>Paste your code and receive a structured AI quality report in seconds.</p>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-        <select value={lang} onChange={e => setLang(e.target.value)} style={{ ...selStyle }}>
-          {LANGS.map(l => <option key={l}>{l}</option>)}
-        </select>
-        <span style={{ color: "var(--muted)", fontSize: 13 }}>
-          {code.split("\n").length} lines · {code.length} chars
-        </span>
-      </div>
-
-      <div style={{ position: "relative", marginBottom: 20 }}>
-        <textarea
-          value={code} onChange={e => setCode(e.target.value)} spellCheck={false}
-          style={{
-            width: "100%", height: 340, resize: "vertical", outline: "none",
-            background: "var(--card)", border: "1px solid var(--border)", color: "var(--text)",
-            borderRadius: 12, padding: 20, fontFamily: "var(--font-mono)", fontSize: 13,
-            lineHeight: 1.7, transition: "border-color 0.2s",
-          }}
-          onFocus={e => e.target.style.borderColor = "var(--accent)"}
-          onBlur={e  => e.target.style.borderColor = "var(--border)"}
-          placeholder="Paste your code here..."
-        />
-        <div style={{
-          position: "absolute", top: 12, right: 16,
-          fontSize: 11, color: "var(--muted)", fontFamily: "var(--font-mono)",
-          background: "var(--card)", padding: "2px 8px", borderRadius: 4,
-        }}>{lang}</div>
-      </div>
-
-      {err && (
-        <div style={{ color: "var(--danger)", fontSize: 13, background: "#f8514911", padding: "10px 14px", borderRadius: 8, marginBottom: 16 }}>
-          ⚠️ {err}
+    <div className="page page-wide fade-in">
+      <section className="review-hero">
+        <div>
+          <p className="eyebrow">Working demo</p>
+          <h1>Review code instantly, without login friction.</h1>
+          <p>
+            Paste code, choose a language, and get scored feedback for complexity, readability,
+            duplication, maintainability, and practical fixes.
+          </p>
         </div>
-      )}
-
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <Btn onClick={analyze} disabled={loading || !code.trim()} icon={loading ? null : "🔍"} style={{ padding: "11px 28px", fontSize: 14 }}>
-          {loading ? <><Spinner size={16} /><span style={{ marginLeft: 8 }}>Analyzing...</span></> : "Analyze Code"}
-        </Btn>
-        {loading && (
-          <span className="pulse" style={{ fontSize: 13, color: "var(--accent)" }}>{STEPS[step]}</span>
-        )}
-      </div>
-
-      {/* Feature hints */}
-      <div style={{ marginTop: 36, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
-        {[
-          { icon: "🎯", t: "Complexity",    d: "Cyclomatic & cognitive complexity analysis" },
-          { icon: "📖", t: "Readability",   d: "Naming, structure, and comment clarity"     },
-          { icon: "🔒", t: "Security",      d: "Common vulnerability and risk detection"     },
-        ].map(c => (
-          <div key={c.t} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 10, padding: 16 }}>
-            <div style={{ fontSize: 22, marginBottom: 8 }}>{c.icon}</div>
-            <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>{c.t}</div>
-            <div style={{ fontSize: 12, color: "var(--muted)" }}>{c.d}</div>
+        <div className="hero-stats">
+          <div>
+            <strong>{lineCount}</strong>
+            <span>Lines</span>
           </div>
-        ))}
-      </div>
+          <div>
+            <strong>{code.length}</strong>
+            <span>Chars</span>
+          </div>
+          <div>
+            <strong>{lang}</strong>
+            <span>Language</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="editor-layout">
+        <div className="editor-panel">
+          <div className="toolbar">
+            <select
+              value={lang}
+              onChange={(event) => {
+                setLang(event.target.value);
+                setCode(SAMPLES[event.target.value]);
+              }}
+              aria-label="Language"
+            >
+              {LANGS.map((item) => <option key={item}>{item}</option>)}
+            </select>
+            <Btn variant="muted" onClick={() => setCode(SAMPLES[lang])}>Load sample</Btn>
+            <Btn variant="muted" onClick={() => setCode("")}>Clear</Btn>
+          </div>
+
+          <textarea
+            className="code-editor"
+            value={code}
+            onChange={(event) => setCode(event.target.value)}
+            spellCheck={false}
+            placeholder="Paste your code here..."
+          />
+
+          {err && <div className="error-box">{err}</div>}
+
+          <div className="action-row">
+            <Btn onClick={analyze} disabled={loading || !code.trim()} style={{ minWidth: 170 }}>
+              {loading ? <><Spinner size={16} /> Analyzing</> : "Analyze code"}
+            </Btn>
+            {loading && <span className="analysis-step">{STEPS[step]}</span>}
+          </div>
+        </div>
+
+        <aside className="insight-panel">
+          <h2>What the reviewer checks</h2>
+          <div className="check-list">
+            <div>
+              <strong>Quality score</strong>
+              <span>Weighted score across core code quality dimensions.</span>
+            </div>
+            <div>
+              <strong>Issues</strong>
+              <span>Security risks, complexity warnings, and readability notes.</span>
+            </div>
+            <div>
+              <strong>Fix guidance</strong>
+              <span>Actionable suggestions that explain what to change next.</span>
+            </div>
+            <div>
+              <strong>History</strong>
+              <span>Each review is saved for the dashboard and report view.</span>
+            </div>
+          </div>
+        </aside>
+      </section>
     </div>
   );
 }

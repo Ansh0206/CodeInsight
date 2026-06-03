@@ -1,117 +1,84 @@
-# CodeInsight 🔍
+# CodeInsight
 
-AI-powered code review and quality analysis platform. Submit code and receive structured reports on complexity, readability, duplication, and improvement suggestions — powered by Claude AI.
-
----
+CodeInsight is a full-stack code review dashboard. Paste code, choose a language, and receive a structured quality report with scores, issues, strengths, and actionable suggestions.
 
 ## Tech Stack
 
-| Layer     | Tech                          |
-|-----------|-------------------------------|
-| Frontend  | React 18, Vite, React Router  |
-| Backend   | Node.js, Express              |
-| AI        | Anthropic Claude API          |
-| Auth      | JWT + bcryptjs                |
-| Database  | SQLite (via better-sqlite3)   |
+| Layer | Tech |
+| --- | --- |
+| Frontend | React 18, Vite, React Router |
+| Backend | Node.js, Express |
+| AI | Anthropic Claude API with local fallback analyzer |
+| Database | SQLite via better-sqlite3 |
 
----
+## Features
 
-## Project Structure
-
-```
-codeinsight/
-├── frontend/          # React + Vite app
-│   ├── src/
-│   │   ├── components/   # Reusable UI components
-│   │   ├── pages/        # Route-level pages
-│   │   ├── hooks/        # Custom React hooks
-│   │   ├── context/      # Auth context
-│   │   └── utils/        # API helpers
-│   └── ...
-├── backend/           # Express API server
-│   ├── routes/        # API route definitions
-│   ├── controllers/   # Business logic
-│   ├── middleware/    # Auth, error handling
-│   ├── models/        # DB models
-│   └── config/        # DB + env setup
-└── README.md
-```
-
----
+- No-login demo flow for quick evaluation
+- Code review scoring for complexity, readability, duplication, and maintainability
+- Security and maintainability issue detection
+- Actionable suggestions and strengths
+- Saved review history
+- Dashboard with score trends and language breakdown
+- Works without an Anthropic key by using the built-in local analyzer
 
 ## Getting Started
 
-### 1. Clone / open in VS Code
-
-```bash
-cd codeinsight
-```
-
-### 2. Setup Backend
+### Backend
 
 ```bash
 cd backend
 npm install
-cp .env.example .env
-# Edit .env and add your Anthropic API key
-npm run dev
+npm start
 ```
 
-### 3. Setup Frontend
+The backend runs on:
+
+```text
+http://localhost:5000
+```
+
+Optional AI setup:
+
+```text
+ANTHROPIC_API_KEY=your_key_here
+ANTHROPIC_MODEL=claude-sonnet-4-20250514
+```
+
+If the API key is missing or the API call fails, CodeInsight automatically uses the local analyzer.
+
+### Frontend
 
 ```bash
-cd ../frontend
+cd frontend
 npm install
 npm run dev
 ```
 
-### 4. Open in browser
+The frontend runs on:
 
-- Frontend: http://localhost:5173  
-- Backend API: http://localhost:5000
-
----
-
-## Demo Accounts
-
-| Email                   | Password  | Role          |
-|-------------------------|-----------|---------------|
-| dev@codeinsight.io      | demo1234  | Senior Dev    |
-| student@uni.edu         | learn123  | CS Student    |
-
----
-
-## Environment Variables
-
-Copy `backend/.env.example` to `backend/.env` and fill in:
-
-```
-PORT=5000
-JWT_SECRET=your_super_secret_jwt_key
-ANTHROPIC_API_KEY=sk-ant-your-key-here
+```text
+http://localhost:5173
 ```
 
-Get your Anthropic API key at: https://console.anthropic.com
+## Project Structure
 
----
+```text
+codeinsight/
+  backend/
+    config/
+    controllers/
+    routes/
+    server.js
+  frontend/
+    src/
+      components/
+      pages/
+      utils/
+```
 
-## GitHub Upload
+## Build Check
 
 ```bash
-git init
-git add .
-git commit -m "Initial commit: CodeInsight full-stack app"
-git remote add origin https://github.com/YOUR_USERNAME/codeinsight.git
-git push -u origin main
+cd frontend
+npm run build
 ```
-
----
-
-## Features
-
-- 🔐 JWT authentication (register / login)
-- ⚡ AI code analysis via Claude (complexity, readability, duplication, suggestions)
-- 📋 Submission history per user
-- 📊 Performance dashboard with score trends
-- 🌐 RESTful API backend
-- 💾 SQLite database (zero setup)

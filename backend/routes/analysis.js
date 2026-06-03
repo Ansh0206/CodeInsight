@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const auth = require("../middleware/auth");
 const {
   analyze,
   getSubmissions,
@@ -8,9 +7,9 @@ const {
   clearSubmissions,
 } = require("../controllers/analysisController");
 
-router.post("/analyze",          auth, analyze);
-router.get("/submissions",       auth, getSubmissions);
-router.get("/submissions/:id",   auth, getSubmission);
-router.delete("/submissions",    auth, clearSubmissions);
+router.post("/analyze", analyze);
+router.get("/submissions", getSubmissions);
+router.get("/submissions/:id", getSubmission);
+router.delete("/submissions", clearSubmissions);
 
 module.exports = router;
